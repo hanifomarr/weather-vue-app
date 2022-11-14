@@ -10,7 +10,7 @@
             <div class="flex gap-3 flex-1 justify-end">
                 <i class="fa-solid fa-circle-info text-xl hover:text-white duration-150 cursor-pointer"
                     @click="toggleModal"></i>
-                <i class="fa-solid fa-plus text-xl hover:text-white duration-150 cursor-pointer"></i>
+                <i v-if="route.query.preview" class="fa-solid fa-plus text-xl hover:text-white duration-150 cursor-pointer" @click="addciy" ></i>
             </div>
 
             <InfoModal :modalActive="modalActive" @close-modal="toggleModal">
@@ -51,8 +51,39 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import InfoModal from './InfoModal.vue';
+import { uid } from "uid";
+import router from '@/router';
+
+const savedCity: any = []
+const route = useRoute()
+
+const addciy = () => {
+    if (localStorage.getItem("savedCity")) {
+        savedCity.value = JSON.parse(localStorage.getItem("savedCity") || "")
+    }
+    const locationObj = {
+        id: uid(),
+        state: route.params.state,
+        city: route.params.city,
+        coords: {
+            lat: route.query.lat,
+            lng: route.query.lng,
+        }
+    }
+    savedCity.push(locationObj);
+
+    localStorage.setItem(
+        "savedCity",
+        JSON.stringify(savedCity)
+    )
+   
+    let query = Object.assign({}, route.query);
+    delete query.preview;
+    router.replace({ query });
+}
+
 
 const modalActive = ref()
 const toggleModal = () => { modalActive.value = !modalActive.value }
